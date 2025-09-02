@@ -5,7 +5,7 @@ services:
       - "8222:8222"
       - "4222:4222"
       
-  client_gateway:
+  client-gateway:
     build: ./client_gateway
     ports:
       - ${CLIENT_GATEWAY_PORT}:3000
@@ -16,7 +16,10 @@ services:
       - PORT=3000
       - NATS_SERVERS=nats://nats-server:4222
 
-  product_ms:
+# ======================================================================
+# Products Microservices
+# ======================================================================
+  product-ms:
     build: ./products_ms
     depends_on:
       - nats-server
@@ -28,6 +31,9 @@ services:
       - DATABASE_URL=file:./dev.db
       - NATS_SERVERS=nats://nats-server:4222
 
+# ======================================================================
+# Orders Microservices
+# ======================================================================
 # database orders-ms 
   order-postgres:
     image: postgres:16
@@ -39,7 +45,7 @@ services:
     volumes:
       - ./orders_ms/postgres_data:/var/lib/postgresql/data
 
-  order_ms:
+  order-ms:
     build: ./orders_ms
     depends_on:
       - order-postgres
@@ -56,3 +62,40 @@ services:
       - PRODUCTS_MS_HOST=product-ms
       - PRODUCTS_MS_PORT=3001
       - NATS_SERVERS=nats://nats-server:4222
+
+# ======================================================================
+# Payments Microservices
+# ======================================================================
+  payment-ms:
+    build: ./payments_ms
+    depends_on:
+      - nats-server
+    ports:
+      - "3003:3003"
+    volumes:
+      - ./payments_ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3003
+      - SECRET_STRIPE=${SECRET_STRIPE}
+      - PUBLIC_STRIPE=${PUBLIC_STRIPE}
+      - STRIPE_SUCCESS=${STRIPE_SUCCESS}
+      - STRIPE_CANCEL=${STRIPE_CANCEL}
+      - STRIPE_ENDPOINT=${STRIPE_ENDPOINT}
+      - NATS_SERVERS=nats://nats-server:4222
+
+# ======================================================================
+# Auth Microservices
+# ======================================================================  
+  auth-ms:
+    build: ./auth_ms
+    depends_on:
+      - nats-server
+    volumes:
+      - ./auth_ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3004
+      - NATS_SERVERS=nats://nats-server:4222
+      - DATABASE_URL=${AUTH_DATABASE_URL}
+      - JWT_SECRET=${AUTH_JWT_SECRET}

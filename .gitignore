@@ -1,7 +1,7 @@
 node_modules
-# client_gateway/
-# orders_ms/
-# products_ms
+client_gateway/
+orders_ms/
+products_ms
 
 postgres/
 
