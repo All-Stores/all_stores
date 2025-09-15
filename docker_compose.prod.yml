@@ -1,0 +1,115 @@
+services:
+  # nats-server:
+  #   image: nats:2.11.8
+      
+  client-gateway:
+    build: 
+      context: ./client_gateway
+      dockerfile: dockerfile.prod
+    image: 273721849918.dkr.ecr.us-east-1.amazonaws.com/client_gateway
+    # ports:
+    #   - ${CLIENT_GATEWAY_PORT}:3000
+    # volumes:
+    #   - ./client_gateway/src:/usr/src/app/src
+    # command: npm run start:dev
+    # environment:
+    #   - PORT=3000
+    #   - NATS_SERVERS=nats://nats-server:4222
+
+# ======================================================================
+# Products Microservices
+# ======================================================================
+  product-ms:
+    build: 
+      context: ./products_ms
+      dockerfile: dockerfile.prod
+    image: 273721849918.dkr.ecr.us-east-1.amazonaws.com/products_ms
+  #   depends_on:
+  #     - nats-server
+  #   volumes:
+  #     - ./products_ms/src:/usr/src/app/src
+  #   command: npm run start:dev
+  #   environment:
+  #     - PORT=3001
+  #     - DATABASE_URL=file:./dev.db
+  #     - NATS_SERVERS=nats://nats-server:4222
+
+# ======================================================================
+# Orders Microservices
+# ======================================================================
+# database orders-ms 
+  # order-postgres:
+  #   image: postgres:16
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: my_database
+  #   volumes:
+  #     - ./orders_ms/postgres_data:/var/lib/postgresql/data
+
+  order-ms:
+    build: 
+      context: ./orders_ms
+      dockerfile: dockerfile.prod
+      args:
+        - ORDER_DATABASE_URL=${ORDER_DATABASE_URL}
+    image: 273721849918.dkr.ecr.us-east-1.amazonaws.com/orders_ms
+  #   depends_on:
+  #     - order-postgres
+  #     - nats-server
+  #   volumes:
+  #     - ./orders_ms/src:/usr/src/app/src
+  #   command: npm run start:dev
+    # environment:
+    #   - PORT=3002
+    #   - DATABASE_URL=${ORDER_DATABASE_URL}
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=postgres
+  #     - POSTGRES_DB=my_database
+  #     - PRODUCTS_MS_HOST=product-ms
+  #     - PRODUCTS_MS_PORT=3001
+  #     - NATS_SERVERS=nats://nats-server:4222
+
+# ======================================================================
+# Payments Microservices
+# ======================================================================
+  payment-ms:
+    build: 
+      context: ./payments_ms
+      dockerfile: dockerfile.prod
+    image: 273721849918.dkr.ecr.us-east-1.amazonaws.com/payments_ms
+  #   depends_on:
+  #     - nats-server
+  #   ports:
+  #     - "3003:3003"
+  #   volumes:
+  #     - ./payments_ms/src:/usr/src/app/src
+  #   command: npm run start:dev
+  #   environment:
+  #     - PORT=3003
+  #     - SECRET_STRIPE=${SECRET_STRIPE}
+  #     - PUBLIC_STRIPE=${PUBLIC_STRIPE}
+  #     - STRIPE_SUCCESS=${STRIPE_SUCCESS}
+  #     - STRIPE_CANCEL=${STRIPE_CANCEL}
+  #     - STRIPE_ENDPOINT=${STRIPE_ENDPOINT}
+  #     - NATS_SERVERS=nats://nats-server:4222
+
+# ======================================================================
+# Auth Microservices
+# ======================================================================  
+  auth-ms:
+    build: 
+      context: ./auth_ms
+      dockerfile: dockerfile.prod
+    image: 273721849918.dkr.ecr.us-east-1.amazonaws.com/auth_ms
+    # depends_on:
+    #   - nats-server
+    # volumes:
+    #   - ./auth_ms/src:/usr/src/app/src
+    # command: npm run start:dev
+    # environment:
+    #   - PORT=3004
+    #   - NATS_SERVERS=nats://nats-server:4222
+    #   - DATABASE_URL=${AUTH_DATABASE_URL}
+    #   - JWT_SECRET=${AUTH_JWT_SECRET}
